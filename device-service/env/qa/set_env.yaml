@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: device-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: device-service
+          env:
+            #fixme
+            - name: REDIS_URI
+              value: redis://ec-mopl-qa-redis-an2.uaod2h.0001.apn2.cache.amazonaws.com:6379/2
+            - name: S3_BUCKET_NAME
+              value: mopl-device-q-an2
+            - name: APARTMENT_SERVICE_URL
+              value: http://qa-apartment-service:3002
+            - name: AUDIT_SERVICE_URL
+              value: http://qa-audit-service:3002
+            - name: SWAGGER_USER_ID
+              value: dev_id
+            - name: SWAGGER_USER_PASSWORD
+              value: dev_password
+            - name: NODE_ENV
+              value: develop
+            - name: ENCRYPT_KEY
+              value: siliconbridgeinc               
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: service
+                    operator: In
+                    values:
+                      - mopl-qa
+      tolerations:
+        - effect: "NoSchedule"
+          key: "service"
+          operator: "Equal"
+          value: "mopl-qa"

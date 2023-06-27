@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authn-service
+spec:
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+  replicas: 2
+  selector:
+    matchLabels:
+      app: authn-service
+  template:
+    metadata:
+      labels:
+        app: authn-service
+    spec:
+      serviceAccountName: mopl-service
+      containers:
+      - name: authn-service
+        readinessProbe:
+          httpGet:
+            path: /authn/common/health/ping
+            port: 3000
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /authn/common/health/ping
+            port: 3000
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 5
+        image: 852637827699.dkr.ecr.ap-northeast-2.amazonaws.com/mopl/authn-service:latest
+        ports:
+        - containerPort: 3000
+        - containerPort: 3002
+        env:
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: mopl-db-url
+              key: authn_mongo_url
+        - name: REDIS_URI
+          value: redis://redis.uaod2h.0001.apn2.cache.amazonaws.com:6379/0
+        - name: JWT_EXPIRES_IN_ACCESS
+          value: 30m
+        - name: JWT_EXPIRES_IN_REFRESH
+          value: 2h
+        - name: ADMIN_HTTP_PORT
+          value: "3000"
+        - name: INTERNAL_HTTP_PORT
+          value: "3002"
+        - name: ADMIN_BASE_PATH
+          value: /authn
+        - name: ADMIN_GLOBAL_PREFIX
+          value: authn
+        - name: USER_SERVICE_URL
+          value: http://user-service:3002
+
+        volumeMounts:
+        - name: backend-keys
+          mountPath: /usr/src/app/private.admin.key
+          subPath: private.admin.key
+        - name: backend-keys
+          mountPath: /usr/src/app/private.user.key
+          subPath: private.user.key
+        - name: backend-keys
+          mountPath: /usr/src/app/public.admin.key
+          subPath: public.admin.key
+        - name: backend-keys
+          mountPath: /usr/src/app/public.user.key
+          subPath: public.user.key
+
+      volumes:
+      - name: backend-keys
+        secret:
+          secretName: backend-keys

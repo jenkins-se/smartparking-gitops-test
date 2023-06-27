@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+
+images:
+  - name: 852637827699.dkr.ecr.ap-northeast-2.amazonaws.com/mopl/apartment-service
+    newTag: qa-20230530035410
+
+namePrefix: pt-
+namespace: smartparking-pt
+
+replicas:
+  #fixme
+  - name: apartment-service
+    count: 1
+
+patches:
+  - target:
+      kind: Ingress
+      #fixme
+      name: apartment-service-ingress
+    path: ing_patch.yaml
+  #  - target:
+  #      kind: Deployment
+  #    path: set_memory.yaml
+  - target:
+      kind: Deployment
+    path: set_env.yaml
+  - target:
+      kind: Ingress
+    path: set_ing_annotations.yaml

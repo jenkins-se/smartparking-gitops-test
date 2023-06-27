@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authn-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: authn-service
+          env:
+            #fixme
+            - name: REDIS_URI
+              value: redis://redis.odqsrp.0001.apn2.cache.amazonaws.com:6379/0
+            - name: USER_SERVICE_URL
+              value: http://dev-user-service:3002
+            - name: SWAGGER_USER_ID
+              value: dev_id
+            - name: SWAGGER_USER_PASSWORD
+              value: dev_password
+            - name: NODE_ENV
+              value: develop
+            - name: JWT_EXPIRES_IN_ACCESS
+              value: 8h
+            - name: JWT_EXPIRES_IN_REFRESH
+              value: 1d

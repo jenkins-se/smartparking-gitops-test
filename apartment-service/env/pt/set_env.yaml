@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apartment-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: apartment-service
+          env:
+            #fixme
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mopl-db-pt-url
+                  key: apartment_database_url
+            - name: S3_BUCKET_NAME
+              value: mopl-apartment-q-an2
+            - name: USER_SERVICE_URL
+              value: http://pt-user-service:3002
+            - name: AUDIT_SERVICE_URL
+              value: http://pt-audit-service:3002
+            - name: DEVICE_SERVICE_URL
+              value: http://pt-device-service:3002
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: service
+                    operator: In
+                    values:
+                      - mopl-qa
+      tolerations:
+        - effect: "NoSchedule"
+          key: "service"
+          operator: "Equal"
+          value: "mopl-qa"

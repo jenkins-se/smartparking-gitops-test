@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: verification-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: verification-service
+          env:
+            - name: USER_SERVICE_URL
+              value: http://dev-user-service:3002
+            - name: ARGOCD-NOTI-TEST
+              value: ARGOCD-NOTI-TEST11

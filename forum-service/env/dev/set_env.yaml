@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forum-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: forum-service
+          env:
+            #fixme
+            - name: S3_BUCKET_FOR_FILE_UPLOAD
+              value: mopl-forum-d-an2
+            - name: APARTMENT_SERVICE_URL
+              value: http://dev-apartment-service:3002
+            - name: AUDIT_SERVICE_URL
+              value: http://dev-audit-service:3002

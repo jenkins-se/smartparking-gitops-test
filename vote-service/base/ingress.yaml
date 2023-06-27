@@ -1,0 +1,59 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vote-service-ingress
+  annotations:
+    alb.ingress.kubernetes.io/group.name: smartparking
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/wafv2-acl-arn: arn:aws:wafv2:ap-northeast-2:852637827699:regional/webacl/waf-mopl-prod-an2/3ad84bb7-4046-46c4-81d9-5e5a40853679
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:852637827699:certificate/c93fd79e-7c0c-4026-9441-eb7f6faa52d1
+    alb.ingress.kubernetes.io/ssl-policy: "ELBSecurityPolicy-FS-1-2-Res-2020-10"
+    alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+    #Health Check
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-port: '3000'
+    alb.ingress.kubernetes.io/healthcheck-path: /vote/common/health/ping
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '10'
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+    alb.ingress.kubernetes.io/success-codes: '200'
+    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+spec:
+  rules:
+    - host: "admin-api.mopl.app"
+      http:
+        paths:
+          - path: /vote
+            pathType: Prefix
+            backend:
+              service:
+                name: ssl-redirect
+                port:
+                  name: use-annotation
+          - backend:
+              service:
+                name: vote-service
+                port:
+                  name: admin-api
+            path: /vote
+            pathType: Prefix
+    - host: "user-api.mopl.app"
+      http:
+        paths:
+          - path: /vote
+            pathType: Prefix
+            backend:
+              service:
+                name: ssl-redirect
+                port:
+                  name: use-annotation
+          - backend:
+              service:
+                name: vote-service
+                port:
+                  name: user-api
+            path: /vote
+            pathType: Prefix

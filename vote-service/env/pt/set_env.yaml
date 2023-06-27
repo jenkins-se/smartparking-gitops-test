@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vote-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: vote-service
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mopl-db-pt-url
+                  key: vote_database_url
+            #fixme
+            - name: S3_BUCKET_NAME
+              value: mopl-vote-q-an2
+            - name: APARTMENT_SERVICE_URL
+              value: http://pt-apartment-service:3002
+            - name: AUDIT_SERVICE_URL
+              value: http://pt-audit-service:3002
+            - name: REDIS_URI
+              value: redis://ec-mopl-qa-redis-an2.uaod2h.0001.apn2.cache.amazonaws.com:6379/7
+            - name: MOPL_URL
+              value: https://pt-admin.mopl.app
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: service
+                    operator: In
+                    values:
+                      - mopl-qa
+      tolerations:
+        - effect: "NoSchedule"
+          key: "service"
+          operator: "Equal"
+          value: "mopl-qa"

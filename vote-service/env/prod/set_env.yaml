@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vote-service
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: service
+                  operator: In
+                  values:
+                    - mopl-prod
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - vote-service
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      tolerations:
+      - effect: "NoSchedule"
+        key: "service"
+        operator: "Equal"
+        value: "mopl-prod"

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: verification-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: verification-service
+          env:
+            - name: USER_SERVICE_URL
+              value: http://pt-user-service:3002
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: service
+                    operator: In
+                    values:
+                      - mopl-qa
+      tolerations:
+        - effect: "NoSchedule"
+          key: "service"
+          operator: "Equal"
+          value: "mopl-qa"

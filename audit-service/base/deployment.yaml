@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audit-service
+spec:
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+  replicas: 2
+  selector:
+    matchLabels:
+      app: audit-service
+  template:
+    metadata:
+      labels:
+        app: audit-service
+    spec:
+      serviceAccountName: mopl-service
+      containers:
+      - name: audit-service
+        readinessProbe:
+          tcpSocket:
+            port: 3000
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 5
+        livenessProbe:
+          tcpSocket:
+            port: 3000
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 5
+        image: 852637827699.dkr.ecr.ap-northeast-2.amazonaws.com/mopl/audit-service:latest
+        ports:
+        - containerPort: 3000
+        - containerPort: 3002
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: mopl-db-url
+              key: audit_database_url
+        - name: ADMIN_HTTP_PORT
+          value: "3000"
+        - name: INTERNAL_HTTP_PORT
+          value: "3002"
+        - name: ADMIN_GLOBAL_PREFIX
+          value: audit
+
+        volumeMounts:
+        - name: backend-keys
+          mountPath: /usr/src/app/public.admin.key
+          subPath: public.admin.key
+
+      volumes:
+      - name: backend-keys
+        secret:
+          secretName: backend-keys

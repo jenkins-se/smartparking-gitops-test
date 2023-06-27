@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: user-service
+          env:
+            #fixme
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mopl-db-pt-url
+                  key: user_mongo_url
+            - name: REDIS_URI
+              value: redis://ec-mopl-qa-redis-an2.uaod2h.0001.apn2.cache.amazonaws.com:6379/5
+            - name: S3_BUCKET_NAME
+              value: mopl-user-q-an2
+            - name: APARTMENT_SERVICE_URL
+              value: http://pt-apartment-service:3002
+            - name: AUTHN_SERVICE_URL
+              value: http://pt-authn-service:3002
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: service
+                    operator: In
+                    values:
+                      - mopl-qa
+      tolerations:
+        - effect: "NoSchedule"
+          key: "service"
+          operator: "Equal"
+          value: "mopl-qa"

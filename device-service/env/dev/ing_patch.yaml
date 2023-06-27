@@ -1,0 +1,11 @@
+- op: replace
+  path: /spec/rules/0/host
+  value: admin-api.mopl-dev.com
+
+- op: replace
+  path: /spec/rules/1/host
+  value: device-api.mopl-dev.com
+
+- op: replace
+  path: /spec/rules/2/host
+  value: user-api.mopl-dev.com

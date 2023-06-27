@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-frontend
+spec:
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+  replicas: 2
+  selector:
+    matchLabels:
+      app: admin-frontend
+  template:
+    metadata:
+      labels:
+        app: admin-frontend
+    spec:
+      serviceAccountName: mopl-service
+      containers:
+      - name: admin-frontend
+        readinessProbe:
+          tcpSocket:
+            port: 3000
+          initialDelaySeconds: 11
+          timeoutSeconds: 3
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 5
+        livenessProbe:
+          tcpSocket:
+            port: 3000
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 5
+        image: 852637827699.dkr.ecr.ap-northeast-2.amazonaws.com/mopl/admin-frontend:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: API_BASE_URL
+          value: https://admin-api.mopl.app
+        - name: SESSION_SECRET
+          value: moplproductionsecret
+        - name: PORT
+          value: "3000"
+        - name: API_USER_URL
+          value: https://user-api.mopl.app

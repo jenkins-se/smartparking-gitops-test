@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reservation-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: reservation-service
+          env:
+            #fixme
+            - name: S3_BUCKET_NAME
+              value: mopl-reservation-d-an2
+            - name: APARTMENT_SERVICE_URL
+              value: 'http://dev-apartment-service:3002'
+            - name: SWAGGER_USER_ID
+              value: dev_id
+            - name: SWAGGER_USER_PASSWORD
+              value: dev_password
+            - name: NODE_ENV
+              value: develop
+            - name: AUDIT_SERVICE_URL
+              value: 'http://dev-audit-service:3002'

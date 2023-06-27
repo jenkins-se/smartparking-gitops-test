@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apartment-service
+spec:
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+  replicas: 2
+  selector:
+    matchLabels:
+      app: apartment-service
+  template:
+    metadata:
+      labels:
+        app: apartment-service
+    spec:
+      serviceAccountName: mopl-service
+      containers:
+      - name: apartment-service
+        readinessProbe:
+          httpGet:
+            path: /apartment/common/health/ping
+            port: 3000
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /apartment/common/health/ping
+            port: 3000
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 5
+        image: 852637827699.dkr.ecr.ap-northeast-2.amazonaws.com/mopl/apartment-service:latest
+        ports:
+        - containerPort: 3000
+        - containerPort: 3001
+        - containerPort: 3002
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: mopl-db-url
+              key: apartment_database_url
+        - name: ADMIN_HTTP_PORT
+          value: "3000"
+        - name: USER_HTTP_PORT
+          value: "3001"
+        - name: INTERNAL_HTTP_PORT
+          value: "3002"
+        - name: S3_BUCKET_NAME
+          value: mopl-apartment-p-an2
+        - name: ADMIN_BASE_PATH
+          value: /apartment
+        - name: USER_BASE_PATH
+          value: /apartment
+        - name: ADMIN_GLOBAL_PREFIX
+          value: apartment
+        - name: USER_GLOBAL_PREFIX
+          value: apartment
+        - name: SES_FROM_ADDRESS
+          value: mopl@mopl.app
+        - name: SES_TO_ADDRESS
+          value: mopl.svc@hanwha.com
+        - name: USER_SERVICE_URL
+          value: http://user-service:3002
+        - name: AUDIT_SERVICE_URL
+          value: http://audit-service:3002
+        - name: DEVICE_SERVICE_URL
+          value: http://device-service:3002
+        - name: MANAGEMENT_FEE_EXCLUDE_ITEMS
+          value: 아파트명,자동이체,전기사용량,온수사용량,수도사용량,난방사용량,가스사용량,전기전월지침,전기당월지침,온수전월지침,온수당월지침,수도전월지침,수도당월지침,난방전월지침,난방당월지침,가스전월지침,가스당월지침,성명,키불출일,구분,이지스단지코드,관리비소계,징수대행,부과년월,당월후연체료,주거,단지특성,전기할인요금,수도할인요금,정수전월지침,정수당월지침,정수사용량
+
+        volumeMounts:
+        - name: backend-keys
+          mountPath: /usr/src/app/public.user.key
+          subPath: public.user.key
+        - name: backend-keys
+          mountPath: /usr/src/app/public.admin.key
+          subPath: public.admin.key
+      volumes:
+      - name: backend-keys
+        secret:
+          secretName: backend-keys

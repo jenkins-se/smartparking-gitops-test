@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apartment-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: apartment-service
+          env:
+            #fixme
+            - name: S3_BUCKET_NAME
+              value: mopl-apartment-q-an2
+            - name: USER_SERVICE_URL
+              value: http://qa-user-service:3002
+            - name: AUDIT_SERVICE_URL
+              value: http://qa-audit-service:3002
+            - name: DEVICE_SERVICE_URL
+              value: http://qa-device-service:3002
+            - name: SES_FROM_ADDRESS
+              value: mopl@mopl-dev.com
+            - name: SES_TO_ADDRESS
+              value: mopl.svc@hanwha.com
+            - name: MANAGEMENT_FEE_EXCLUDE_ITEMS
+              value: 아파트명,자동이체,전기사용량,온수사용량,수도사용량,난방사용량,가스사용량,전기전월지침,전기당월지침,온수전월지침,온수당월지침,수도전월지침,수도당월지침,난방전월지침,난방당월지침,가스전월지침,가스당월지침,성명,키불출일,구분,이지스단지코드,관리비소계,징수대행,부과년월,당월후연체료,주거,단지특성,전기할인요금,수도할인요금,정수전월지침,정수당월지침,정수사용량
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: service
+                    operator: In
+                    values:
+                      - mopl-qa
+      tolerations:
+        - effect: "NoSchedule"
+          key: "service"
+          operator: "Equal"
+          value: "mopl-qa"

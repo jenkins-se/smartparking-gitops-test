@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+spec:
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      serviceAccountName: mopl-service
+      containers:
+      - name: user-service
+        readinessProbe:
+          httpGet:
+            path: /user/common/health/ping
+            port: 3001
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /user/common/health/ping
+            port: 3001
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 5
+        image: 852637827699.dkr.ecr.ap-northeast-2.amazonaws.com/mopl/user-service:latest
+        ports:
+        - containerPort: 3001
+        - containerPort: 3002
+        env:
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: mopl-db-url
+              key: user_mongo_url
+        - name: REDIS_URI
+          value: redis://redis.uaod2h.0001.apn2.cache.amazonaws.com:6379/1
+        - name: JWT_EXPIRES_IN_ACCESS
+          value: 1w
+        - name: JWT_EXPIRES_IN_REFRESH
+          value: 3w
+        - name: USER_HTTP_PORT
+          value: "3001"
+        - name: INTERNAL_HTTP_PORT
+          value: "3002"
+        - name: USER_BASE_PATH
+          value: /user
+        - name: ADMIN_GLOBAL_PREFIX
+          value: user
+        - name: USER_GLOBAL_PREFIX
+          value: user
+        - name: S3_BUCKET_NAME
+          value: mopl-user-p-an2
+        - name: APARTMENT_SERVICE_URL
+          value: http://apartment-service:3002
+        - name: AUTHN_SERVICE_URL
+          value: http://authn-service:3002
+        - name: JWT_EXPIRES_IN_VOTER
+          value: 1d
+        volumeMounts:
+        - name: backend-keys
+          mountPath: /usr/src/app/private.user.key
+          subPath: private.user.key
+        - name: backend-keys
+          mountPath: /usr/src/app/public.user.key
+          subPath: public.user.key
+        - name: backend-keys
+          mountPath: /usr/src/app/public.admin.key
+          subPath: public.admin.key
+
+      volumes:
+      - name: backend-keys
+        secret:
+          secretName: backend-keys

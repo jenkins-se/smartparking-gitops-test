@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audit-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: audit-service
+          env:
+            #fixme
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mopl-db-url
+                  key: audit_database_url

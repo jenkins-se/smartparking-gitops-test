@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authn-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: authn-service
+          env:
+            #fixme
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mopl-db-pt-url
+                  key: authn_mongo_url
+            - name: REDIS_URI
+              value: redis://ec-mopl-qa-redis-an2.uaod2h.0001.apn2.cache.amazonaws.com:6379/4
+            - name: USER_SERVICE_URL
+              value: http://pt-user-service:3002
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: service
+                    operator: In
+                    values:
+                      - mopl-qa
+      tolerations:
+        - effect: "NoSchedule"
+          key: "service"
+          operator: "Equal"
+          value: "mopl-qa"

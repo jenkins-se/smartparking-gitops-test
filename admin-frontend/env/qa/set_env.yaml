@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-frontend
+spec:
+  template:
+    spec:
+      containers:
+        - name: admin-frontend
+          env:
+            #fixme
+            - name: API_BASE_URL
+              value: https://qa-admin-api.mopl.app
+            - name: SESSION_SECRET
+              value: moplproductionsecret
+            - name: PORT
+              value: "3000"
+            - name: API_USER_URL
+              value: https://qa-user-api.mopl.app
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: service
+                  operator: In
+                  values:
+                    - mopl-qa
+      tolerations:
+      - effect: "NoSchedule"
+        key: "service"
+        operator: "Equal"
+        value: "mopl-qa"

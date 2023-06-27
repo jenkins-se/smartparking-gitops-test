@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forum-service
+spec:
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+  replicas: 2
+  selector:
+    matchLabels:
+      app: forum-service
+  template:
+    metadata:
+      labels:
+        app: forum-service
+    spec:
+      serviceAccountName: mopl-service
+      containers:
+      - name: forum-service
+        readinessProbe:
+          tcpSocket:
+            port: 8000
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 5
+        livenessProbe:
+          tcpSocket:
+            port: 8000
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 5
+        image: 852637827699.dkr.ecr.ap-northeast-2.amazonaws.com/mopl/forum-service:latest
+        ports:
+        - containerPort: 3000
+        - containerPort: 3001
+        - containerPort: 3002
+        - containerPort: 3003
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: mopl-db-url
+              key: forum_database_url
+        - name: S3_BUCKET_FOR_FILE_UPLOAD
+          value: mopl-forum-p-an2
+        - name: GLOBAL_PREFIX
+          value: forum
+        - name: APARTMENT_SERVICE_URL
+          value: http://apartment-service:3002
+        - name: AUDIT_SERVICE_URL
+          value: http://audit-service:3002

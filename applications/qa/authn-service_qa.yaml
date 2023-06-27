@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: team-backendsolutiondev-mopl-alert
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: team-backendsolutiondev-mopl-alert
+    notifications.argoproj.io/subscribe.on-sync-running.slack: team-backendsolutiondev-mopl-alert
+    notifications.argoproj.io/subscribe.on-sync-status-unknown.slack: team-backendsolutiondev-mopl-alert
+    notifications.argoproj.io/subscribe.on-health-degraded.slack: team-backendsolutiondev-mopl-alert
+    #notifications.argoproj.io/subscribe.on-deployed.slack: team-backendsolutiondev-mopl-alert
+  name: authn-service-qa
+  namespace: argocd
+spec:
+  destination:
+    namespace: smartparking-qa
+    server: https://kubernetes.default.svc
+  project: smartparking-qa
+  source:
+    path: authn-service/env/qa/
+    repoURL: https://github.com/backend-sw-development-team4/smartparking-gitops.git
+    targetRevision: main
+  syncPolicy:
+    automated: {}
