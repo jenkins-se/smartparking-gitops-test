@@ -4,7 +4,7 @@ resources:
   - ../../base
 images:
   - name: 852637827699.dkr.ecr.ap-northeast-2.amazonaws.com/mopl/admin-frontend
-    newTag: prod-202306270000-R28
+    newTag: prod--R5
 
 patches:
   #  - target:
