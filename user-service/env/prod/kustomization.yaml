@@ -4,7 +4,7 @@ bases:
   - ../../base
 images:
   - name: 852637827699.dkr.ecr.ap-northeast-2.amazonaws.com/mopl/user-service
-    newTag: prod-2023062201011
+    newTag: prod-20230629133224-R1
 
 patches:
   #  - target:
