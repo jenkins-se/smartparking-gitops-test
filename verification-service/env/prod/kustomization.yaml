@@ -4,7 +4,7 @@ bases:
   - ../../base
 images:
   - name: 852637827699.dkr.ecr.ap-northeast-2.amazonaws.com/mopl/verification-service
-    newTag: prod-20230622010117
+    newTag: prod-20230630081839-R3
 
 configMapGenerator:
   - name: nginx-config
